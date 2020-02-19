@@ -6,17 +6,22 @@
  */
 
 #include "ThermistorNTC.h"
-#include "mbed_wait_api.h"
 #include "ge1923.h"
 #include "ValueMapping.h"
+
 #include "Si7021.h"
+
+#include "platform/mbed_wait_api.h"
+
 
 #define NTC_ADC_PIN A0
 
 ep::LinearlyInterpolatedValueMapping ge1923_map(
         mbed::make_const_Span(ge1923::calibration_table));
 
-ep::ThermistorNTC ntc(NTC_ADC_PIN, 10000.0f, &ge1923_map);
+mbed::AnalogIn ntc_div_adc(NTC_ADC_PIN);
+ep::ResistorDivider ntc_div(ntc_div_adc, 10000.0f);
+ep::ThermistorNTC ntc(ntc_div, 10000.0f, &ge1923_map);
 
 mbed::I2C sensor_i2c(I2C_SDA, I2C_SCL);
 Si7021 si_temp_sensor(sensor_i2c);
